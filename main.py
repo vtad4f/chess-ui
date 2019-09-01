@@ -1,7 +1,10 @@
 #
-# THIS IS A REFACTORED STACK OVERFLOW SOLUTIONS:
+# THIS CODE
+#   Author: Vincent Allen
+#
+# IS A REFACTORED VERSION OF STACK OVERFLOW ANSWERS:
 #   https://stackoverflow.com/questions/47287328/get-clicked-chess-piece-from-an-svg-chessboard
-#   Authors: a_manthey_67, Boštjan Mejak
+#   Original authors: a_manthey_67, Boštjan Mejak
 #
 
 import chess
@@ -89,6 +92,7 @@ class ChessBoard(QWidget):
       
 if __name__ == "__main__":
    """
+      BRIEF  Main Execution
    """
    q_app = QApplication([])
    wnd = ChessBoard()
