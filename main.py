@@ -33,9 +33,9 @@ class MainWindow(QWidget):
         # see chess.svg.py line 129
         self.margin = 0.05*self.cbSize if self.coordinates == True else 0
         self.squareSize  = (self.cbSize - 2 * self.margin) / 8.0
-        self.chessboard = chess.Board()
+        self.board = chess.Board()
         self.pieceToMove = [None, None]
-        self.drawBoard()
+        self.DrawBoard()
         
     @pyqtSlot(QWidget)
     def mousePressEvent(self, event):
@@ -46,7 +46,6 @@ class MainWindow(QWidget):
         Moves must be made according to the rules of chess because
         illegal moves are suppressed.
         """
-        if event.x()
         if self.svgX < event.x() <= self.svgX + self.cbSize and self.svgY < event.y() <= self.svgY + self.cbSize:   # mouse on chessboard
             if event.buttons() == Qt.LeftButton:
                 # if the click is on chessBoard only
@@ -54,27 +53,28 @@ class MainWindow(QWidget):
                     file = int((event.x() - (self.svgX + self.margin))/self.squareSize)             
                     rank = 7 - int((event.y() - (self.svgY + self.margin))/self.squareSize) 
                     square = chess.square(file, rank)                       # chess.sqare.mirror() if white is on top
-                    piece = self.chessboard.piece_at(square)
+                    piece = self.board.piece_at(square)
                     coordinates = '{}{}'.format(chr(file + 97), str(rank +1))
                     if self.pieceToMove[0] is not None:
                         move = chess.Move.from_uci('{}{}'.format(self.pieceToMove[1], coordinates))
-                        if move in self.chessboard.legal_moves:
-                            self.chessboard.push(move)
-                            print(self.chessboard.fen())
+                        if move in self.board.legal_moves:
+                            self.board.push(move)
+                            print(self.board.fen())
                         piece = None
                         coordinates= None
                     self.pieceToMove = [piece, coordinates]
-                    self.drawBoard()
-
-    def drawBoard(self):
+                    self.DrawBoard()
+                    
+    def DrawBoard(self):
         """
-        Draw a chessboard with the starting position and then redraw
-        it for every new move.
+            BRIEF  Redraw the chessboard based on self.board state
         """
-        self.chessboardSvg = self.chessboard._repr_svg_().encode("UTF-8")
-        self.drawBoardSvg = self.widgetSvg.load(self.chessboardSvg)
-
+        self.widgetSvg.load(self.board._repr_svg_().encode("UTF-8"))
+        
+        
 if __name__ == "__main__":
+    """
+    """
     chessTitan = QApplication([])
     window = MainWindow()
     window.show()
