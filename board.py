@@ -95,18 +95,21 @@ class ChessBoard(QWidget):
       """
          BRIEF  Get the algebraic notation for the clicked square
       """
-      file =     int((event.x() - (self.svg_xy + self.margin))/self.square_size)
-      rank = 7 - int((event.y() - (self.svg_xy + self.margin))/self.square_size)
+      top_left = self.svg_xy + self.margin
+      file =     int((event.x() - top_left)/self.square_size)
+      rank = 7 - int((event.y() - top_left)/self.square_size)
       return chr(file + 97) + str(rank + 1)
       
    def LeftClickedBoard(self, event):
       """
          BRIEF  Check to see if they left-clicked on the chess board
       """
+      topleft     = self.svg_xy + self.margin
+      bottomright = self.board_size + self.svg_xy - self.margin
       return all([
          event.buttons() == Qt.LeftButton,
-         self.svg_xy + self.margin < event.x() <  self.svg_xy + self.board_size - self.margin,
-         self.svg_xy + self.margin < event.y() <  self.svg_xy + self.board_size - self.margin,
+         topleft < event.x() < bottomright,
+         topleft < event.y() < bottomright,
       ])
       
       
