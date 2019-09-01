@@ -65,7 +65,8 @@ class ChessBoard(QWidget):
          clicked_algebraic = self.GetClicked(event)
          
          if self.last_clicked:
-            self.Move(self.last_clicked + clicked_algebraic)
+            if self.last_clicked != clicked_algebraic:
+               self.Move(self.last_clicked + clicked_algebraic)
             self.last_clicked = None
             
          self.last_clicked = clicked_algebraic
@@ -78,7 +79,6 @@ class ChessBoard(QWidget):
       if move in self.board.legal_moves:
          self.board.push(move)
          self.DrawBoard()
-         emit NextMove()
          
    def DrawBoard(self):
       """
@@ -86,7 +86,7 @@ class ChessBoard(QWidget):
                 Highlight src and dest squares for last move
                 Highlight king if in check
       """
-      self.svg_widget.load(self.board._repr_svg_().encode("UTF-8"))
+      self.svg_widget.load(self.board._repr_svg_().encode("utf-8"))
       print(self.board.fen())
       if self.board.is_game_over():
          print("Game over!")

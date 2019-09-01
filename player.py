@@ -1,32 +1,29 @@
 
 
-from PyQt5.QtCore import pyqtSlot
 from subprocess import Popen, PIPE, DEVNULL
 import sys
 
 
-class Player():
+class AiPlayer():
    """
+      BRIEF  A wrapper for an AI executable
    """
-   TURN_TIME_LIMIT_S = 1
    
-   def __init__(self, exe_path = ''):
+   def __init__(self, exe_path, turn_limit_s):
       """
+         BRIEF  Start with the path to the exe and seconds limit per turn
       """
       self.exe_path = exe_path
-      self.is_human = (exe_path == '')
+      self.turn_limit_s = turn_limit_s
       
-   @pyqtSlot(str)
    def Move(self, fen):
       """
+         BRIEF  Open a process to get the next move from the AI
       """
-      p = Popen([self.exe_path, fen, str(Player.TURN_TIME_LIMIT_S)], stdout=PIPE, stderr=DEVNULL)
-      out, err = p.communicate()
-      p.wait()
-      print(out)
-      sys.stdout.flush()
-      
-      
+      args = [exe_path, fen, str(self.turn_limit_s)]
+      p = Popen(args,stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
+      out, _ = p.communicate()
+      return out.decode().rstrip('\r\n')
       
       
 if __name__ == "__main__":
@@ -34,7 +31,28 @@ if __name__ == "__main__":
       BRIEF  Test the Player class
    """
    exe_path = '../chess-ai/build/chess-ai.exe'
-   player = Player(exe_path)
-   player.Move('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -')
+   
+   player1 = AiPlayer(exe_path, '.1')
+   player2 = AiPlayer(exe_path, '.1')
+   player = player1
+   
+   import chess
+   board = chess.Board()
+   
+   while not board.is_game_over():
+      uci = player.Move(board.fen())
+      
+      print(uci)
+      sys.stdout.flush()
+      
+      board.push(chess.Move.from_uci(uci))
+      
+      if player == player1:
+         player = player2
+      else:
+         player = player1
+         
+   print(board.fen())
+   sys.stdout.flush()
    
    
