@@ -1,5 +1,6 @@
 
 
+from PyQt5.QtCore import pyqtSlot
 from subprocess import Popen, PIPE, DEVNULL
 import sys
 
@@ -16,13 +17,13 @@ class AiPlayer():
       self.exe_path = exe_path
       self.turn_limit_s = turn_limit_s
       
-   def Move(self, fen):
+   def TakeTurn(self, fen):
       """
          BRIEF  Open a process to get the next move from the AI
       """
       args = [exe_path, fen, str(self.turn_limit_s)]
-      p = Popen(args,stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
-      out, _ = p.communicate()
+      process = Popen(args,stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
+      out, _ = process.communicate()
       return out.decode().rstrip('\r\n')
       
       
@@ -40,7 +41,7 @@ if __name__ == "__main__":
    board = chess.Board()
    
    while not board.is_game_over():
-      uci = player.Move(board.fen())
+      uci = player.TakeTurn(board.fen())
       
       print(uci)
       sys.stdout.flush()
