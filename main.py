@@ -51,13 +51,19 @@ class ChessBoard(QWidget):
          clicked_algebraic = self.GetClicked(event)
          
          if self.last_clicked:
-            move = chess.Move.from_uci(self.last_clicked + clicked_algebraic)
-            if move in self.board.legal_moves:
-               self.board.push(move)
-               self.DrawBoard()
+            self.Move(self.last_clicked + clicked_algebraic)
             self.last_clicked = None
             
          self.last_clicked = clicked_algebraic
+         
+   def Move(self, uci):
+      """
+         BRIEF  Apply a move to the board
+      """
+      move = chess.Move.from_uci(self.last_clicked + clicked_algebraic)
+      if move in self.board.legal_moves:
+         self.board.push(move)
+         self.DrawBoard()
          
    def DrawBoard(self):
       """
