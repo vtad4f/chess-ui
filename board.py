@@ -6,6 +6,8 @@
 #   https://stackoverflow.com/questions/47287328/get-clicked-chess-piece-from-an-svg-chessboard
 #   Original authors: a_manthey_67, Boštjan Mejak
 #
+# Also see https://github.com/niklasf/python-chess/issues/223
+#
 
 import chess
 import chess.svg
@@ -21,11 +23,23 @@ class ChessBoard(QWidget):
    """
    WND_XY = 200
    
+   @staticmethod
+   def Show():
+      """
+         BRIEF  Create a qapp, construct the chessboard widget,
+                show the board, then block
+      """
+      q_app = QApplication([])
+      board = ChessBoard()
+      board.show()
+      q_app.exec()
+      
    def __init__(self):
       """
          BRIEF  Initialize the chessboard
       """
       super().__init__()
+      self.setWindowTitle("Chess")
       
       self.svg_xy = 50 # top left x,y-pos of chessboard
       self.board_size = 600 # size of chessboard
@@ -60,10 +74,11 @@ class ChessBoard(QWidget):
       """
          BRIEF  Apply a move to the board
       """
-      move = chess.Move.from_uci(self.last_clicked + clicked_algebraic)
+      move = chess.Move.from_uci(uci)
       if move in self.board.legal_moves:
          self.board.push(move)
          self.DrawBoard()
+         emit NextMove()
          
    def DrawBoard(self):
       """
@@ -98,12 +113,8 @@ class ChessBoard(QWidget):
       
 if __name__ == "__main__":
    """
-      BRIEF  Main Execution
+      BRIEF  Test the ChessBoard class
    """
-   q_app = QApplication([])
-   wnd = ChessBoard()
-   wnd.setWindowTitle("Chess")
-   wnd.show()
-   q_app.exec()
+   ChessBoard.Show()
    
    
