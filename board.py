@@ -23,17 +23,6 @@ class ChessBoard(QWidget):
    """
    WND_XY = 200
    
-   @staticmethod
-   def Show():
-      """
-         BRIEF  Create a qapp, construct the chessboard widget,
-                show the board, then block
-      """
-      q_app = QApplication([])
-      board = ChessBoard()
-      board.show()
-      q_app.exec()
-      
    def __init__(self):
       """
          BRIEF  Initialize the chessboard
@@ -117,6 +106,9 @@ if __name__ == "__main__":
    """
       BRIEF  Test the ChessBoard class
    """
-   ChessBoard.Show()
+   q_app = QApplication([])
+   wnd = ChessBoard()
+   wnd.show()
+   q_app.exec()
    
    
