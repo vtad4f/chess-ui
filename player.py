@@ -54,7 +54,7 @@ class AiPlayer(Player):
                  Emit DecidedMove(uci) and return uci
       """
       if self.IsMyMove(fen):
-         args = [exe_path, fen, str(self.turn_limit_s)]
+         args = [self.exe_path, fen, str(self.turn_limit_s)]
          process = Popen(args, stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
          out, _ = process.communicate()
          uci = out.decode().rstrip('\r\n')
@@ -71,13 +71,13 @@ if __name__ == "__main__":
    
    exe_path = '../chess-ai/build/chess-ai.exe'
    
-   player1 = AiPlayer(Player.WHITE, exe_path, '.1')
-   player2 = AiPlayer(Player.BLACK, exe_path, '.1')
+   player_w = AiPlayer(Player.WHITE, exe_path, .1)
+   player_b = AiPlayer(Player.BLACK, exe_path, .1)
    
    #----------------------
    # Synchronous
    #----------------------
-   player = player1
+   player = player_w
    board = chess.Board()
    
    while not board.is_game_over():
@@ -88,10 +88,10 @@ if __name__ == "__main__":
       
       board.push(chess.Move.from_uci(uci))
       
-      if player == player1:
-         player = player2
+      if player == player_w:
+         player = player_b
       else:
-         player = player1
+         player = player_w
          
    print(board.fen())
    sys.stdout.flush()
@@ -136,22 +136,21 @@ if __name__ == "__main__":
             
    q_app = QApplication([])
    
-   player = player1
    board = ChessBoard()
    
    thread = QThread()
-   player1.moveToThread(thread)
-   player2.moveToThread(thread)
+   player_w.moveToThread(thread)
+   player_b.moveToThread(thread)
    
-   player1.DecidedMove.connect(board.ApplyMove)
-   player2.DecidedMove.connect(board.ApplyMove)
-   board.ReadyForNextMove.connect(player1.TakeTurn)
-   board.ReadyForNextMove.connect(player2.TakeTurn)
-   board.GameOver.connect(thread.quit)
+   player_w.DecidedMove.connect(board.ApplyMove)
+   player_b.DecidedMove.connect(board.ApplyMove)
+   board.ReadyForNextMove.connect(player_w.TakeTurn)
+   board.ReadyForNextMove.connect(player_b.TakeTurn)
    board.GameOver.connect(q_app.exit)
+   board.GameOver.connect(thread.quit)
    
    thread.start()
-   player.TakeTurn(board.fen())
+   player_w.TakeTurn(board.fen())
    
    q_app.exec()
    thread.wait()

@@ -11,17 +11,20 @@
 
 import chess
 import chess.svg
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QWidget
 import sys
 
 
-class ChessBoard(QWidget):
+class ChessBoard(QWidget, chess.Board):
    """
       BRIEF  An interactive chessboard that only allows legal moves
    """
    WND_XY = 200
+   
+   ReadyForNextMove = pyqtSignal(str)
+   GameOver = pyqtSignal()
    
    def __init__(self):
       """
@@ -41,7 +44,6 @@ class ChessBoard(QWidget):
       self.svg_widget.setGeometry(self.svg_xy, self.svg_xy, self.board_size, self.board_size)
       
       self.last_clicked = None
-      self.board = chess.Board()
       self.DrawBoard()
       
    @pyqtSlot(QWidget)
@@ -59,26 +61,31 @@ class ChessBoard(QWidget):
                
          self.last_clicked = clicked_algebraic
          
+   @pyqtSlot(str)
    def ApplyMove(self, uci):
       """
          BRIEF  Apply a move to the board
       """
       move = chess.Move.from_uci(uci)
-      if move in self.board.legal_moves:
-         self.board.push(move)
+      if move in self.legal_moves:
+         self.push(move)
          self.DrawBoard()
+         
+         print(self.fen())
+         if self.is_game_over():
+            print("Game over!")
+            self.GameOver.emit()
+         else:
+            self.ReadyForNextMove.emit(self.fen())
+         sys.stdout.flush()
          
    def DrawBoard(self):
       """
-         BRIEF  Redraw the chessboard based on self.board state
+         BRIEF  Redraw the chessboard based on board state
                 Highlight src and dest squares for last move
                 Highlight king if in check
       """
-      self.svg_widget.load(self.board._repr_svg_().encode("utf-8"))
-      print(self.board.fen())
-      if self.board.is_game_over():
-         print("Game over!")
-      sys.stdout.flush()
+      self.svg_widget.load(self._repr_svg_().encode("utf-8"))
       
    def GetClicked(self, event):
       """
@@ -106,9 +113,11 @@ if __name__ == "__main__":
    """
       BRIEF  Test the ChessBoard class
    """
+   from PyQt5.QtWidgets import QApplication
+   
    q_app = QApplication([])
-   wnd = ChessBoard()
-   wnd.show()
+   board = ChessBoard()
+   board.show()
    q_app.exec()
    
    
