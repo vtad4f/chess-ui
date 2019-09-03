@@ -14,13 +14,18 @@ class Player(QObject):
    
    DecidedMove = pyqtSignal(str)
    
-   def __init__(self, color):
+   def __init__(self, color, thread = None, board = None):
       """
          BRIEF  Cache the player's color
       """
       super().__init__()
       self.color = color
-      
+      if thread:
+         self.moveToThread(thread)
+      if board:
+         self.DecidedMove.connect(board.ApplyMove)
+         board.ReadyForNextMove.connect(self.TakeTurn)
+         
    def IsMyMove(self, fen):
       """
          BRUEF  Check the fen to see if it's my turn
@@ -39,11 +44,11 @@ class AiPlayer(Player):
       BRIEF  A wrapper for an AI executable
    """
    
-   def __init__(self, color, exe_path, turn_limit_s):
+   def __init__(self, exe_path, turn_limit_s, color, thread = None, board = None):
       """
          BRIEF  Start with the path to the exe and seconds limit per turn
       """
-      super().__init__(color)
+      super().__init__(color, thread, board)
       self.exe_path = exe_path
       self.turn_limit_s = turn_limit_s
       
@@ -71,14 +76,13 @@ if __name__ == "__main__":
    
    exe_path = '../chess-ai/build/chess-ai.exe'
    
-   player_w = AiPlayer(Player.WHITE, exe_path, .1)
-   player_b = AiPlayer(Player.BLACK, exe_path, .1)
-   
    #----------------------
    # Synchronous
    #----------------------
-   player = player_w
    board = chess.Board()
+   player_w = AiPlayer(exe_path, .1, Player.WHITE)
+   player_b = AiPlayer(exe_path, .1, Player.BLACK)
+   player = player_w
    
    while not board.is_game_over():
       uci = player.TakeTurn(board.fen())
@@ -135,21 +139,15 @@ if __name__ == "__main__":
             self.ReadyForNextMove.emit(self.fen())
             
    q_app = QApplication([])
-   
-   board = ChessBoard()
-   
    thread = QThread()
-   player_w.moveToThread(thread)
-   player_b.moveToThread(thread)
+   board = ChessBoard()
+   player_w = AiPlayer(exe_path, .1, Player.WHITE, thread, board)
+   player_b = AiPlayer(exe_path, .1, Player.BLACK, thread, board)
    
-   player_w.DecidedMove.connect(board.ApplyMove)
-   player_b.DecidedMove.connect(board.ApplyMove)
-   board.ReadyForNextMove.connect(player_w.TakeTurn)
-   board.ReadyForNextMove.connect(player_b.TakeTurn)
    board.GameOver.connect(q_app.exit)
-   board.GameOver.connect(thread.quit)
-   
+   q_app.aboutToQuit.connect(thread.quit)
    thread.start()
+   
    player_w.TakeTurn(board.fen())
    
    q_app.exec()
