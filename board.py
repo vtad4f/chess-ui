@@ -57,7 +57,7 @@ class ChessBoard(QWidget, chess.Board):
          
          if self.last_clicked:
             if self.last_clicked != clicked_algebraic:
-               self.ApplyMove(self.last_clicked + clicked_algebraic)
+               self.ApplyMove(self.last_clicked + clicked_algebraic) # TODO - promote
                
          self.last_clicked = clicked_algebraic
          
