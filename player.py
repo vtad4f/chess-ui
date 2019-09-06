@@ -2,6 +2,7 @@
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from subprocess import Popen, PIPE, DEVNULL
+from time import time
 
 
 class Player(QObject):
@@ -44,13 +45,14 @@ class AiPlayer(Player):
       BRIEF  A wrapper for an AI executable
    """
    
-   def __init__(self, exe_path, turn_limit_s, color, thread = None, board = None):
+   def __init__(self, exe_path, total_s, color, thread = None, board = None):
       """
          BRIEF  Start with the path to the exe and seconds limit per turn
       """
       super().__init__(color, thread, board)
       self.exe_path = exe_path
-      self.turn_limit_s = turn_limit_s
+      self.total_s = total_s
+      self.remaining_s = self.total_s
       
    @pyqtSlot(str)
    def TakeTurn(self, fen):
@@ -59,11 +61,18 @@ class AiPlayer(Player):
                  Emit DecidedMove(uci) and return uci
       """
       if self.IsMyMove(fen):
-         args = [self.exe_path, fen, str(self.turn_limit_s)]
+         before_turn = time()
+         
+         args = [self.exe_path, fen, str(self.remaining_s)]
          process = Popen(args, stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
          out, _ = process.communicate()
          uci = out.decode().rstrip('\r\n')
          self.DecidedMove.emit(uci)
+         
+         self.remaining_s -= (time() - before_turn)
+         if self.remaining_s < 0.0:
+            self.remaining_s = 0.0
+            
          return uci
          
          
@@ -75,13 +84,14 @@ if __name__ == "__main__":
    import sys
    
    exe_path = '../chess-ai/build/chess-ai.exe'
+   total_s = 1
    
    #----------------------
    # Synchronous
    #----------------------
    board = chess.Board()
-   player_w = AiPlayer(exe_path, .1, Player.WHITE)
-   player_b = AiPlayer(exe_path, .1, Player.BLACK)
+   player_w = AiPlayer(exe_path, total_s, Player.WHITE)
+   player_b = AiPlayer(exe_path, total_s, Player.BLACK)
    player = player_w
    
    while not board.is_game_over():
@@ -141,8 +151,8 @@ if __name__ == "__main__":
    q_app = QApplication([])
    thread = QThread()
    board = ChessBoard()
-   player_w = AiPlayer(exe_path, .1, Player.WHITE, thread, board)
-   player_b = AiPlayer(exe_path, .1, Player.BLACK, thread, board)
+   player_w = AiPlayer(exe_path, total_s, Player.WHITE, thread, board)
+   player_b = AiPlayer(exe_path, total_s, Player.BLACK, thread, board)
    
    board.GameOver.connect(q_app.exit)
    q_app.aboutToQuit.connect(thread.quit)
