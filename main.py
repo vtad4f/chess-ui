@@ -11,13 +11,12 @@ if __name__ == '__main__':
    from PyQt5.QtWidgets import QApplication
    
    exe_path = '../chess-ai/build/chess-ai.exe'
-   total_s = 15 * 60.0
    
    q_app = QApplication([])
    thread = QThread()
    board = ChessBoard()
-   # player_w = AiPlayer(exe_path, total_s, AiPlayer.WHITE, thread, board)
-   player_b = AiPlayer(exe_path, total_s, AiPlayer.BLACK, thread, board)
+   # player_w = AiPlayer(exe_path, 5, AiPlayer.WHITE, thread, board)
+   player_b = AiPlayer(exe_path, 5, AiPlayer.BLACK, thread, board)
    
    q_app.aboutToQuit.connect(thread.quit)
    thread.start()
