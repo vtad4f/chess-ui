@@ -3,10 +3,10 @@
 from board import ChessBoard
 from player import Player, AiPlayer
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QCheckBox, QDoubleSpinBox, QHBoxLayout, QVBoxLayout
 
 
-class PlayerUI(QCheckBox):
+class PlayerUI(QWidget):
    """
    """
    COLOR = { Player.WHITE : "White", Player.BLACK : "Black"}
@@ -16,11 +16,22 @@ class PlayerUI(QCheckBox):
    def __init__(self, player, parent = None):
       """
       """
-      label = "{0} AI".format(PlayerUI.COLOR[player.color])
-      super().__init__(label, parent)
+      super().__init__(parent)
+      
+      # init UI
+      enabled = QCheckBox("{0} AI".format(PlayerUI.COLOR[player.color]), self)
+      turn_limit_s = QDoubleSpinBox(self)
+      turn_limit_s.setValue(player.turn_limit_s)
+      
+      v_layout = QVBoxLayout()
+      v_layout.addWidget(enabled)
+      v_layout.addWidget(turn_limit_s)
+      
+      self.setLayout(v_layout)
       
       # connect signals/slots
-      self.stateChanged.connect(player.Checked)
+      enabled.stateChanged.connect(player.SetCheckSate)
+      turn_limit_s.valueChanged.connect(player.SetTurnLimit)
       
       
 class Window(QWidget):
@@ -36,12 +47,15 @@ class Window(QWidget):
       self.player_b = AiPlayer(exe_path, turn_limit_s, AiPlayer.BLACK, thread, self.board)
       self.player_w = AiPlayer(exe_path, turn_limit_s, AiPlayer.WHITE, thread, self.board)
       
-      self.player_options_b = PlayerUI(self.player_b, self)
-      self.player_options_w = PlayerUI(self.player_w, self)
+      player_options_b = PlayerUI(self.player_b, self)
+      player_options_w = PlayerUI(self.player_w, self)
       
       v_layout = QVBoxLayout()
-      v_layout.addWidget(self.player_options_b)
-      v_layout.addWidget(self.player_options_w)
+      v_layout.addStretch()
+      v_layout.addWidget(player_options_b)
+      v_layout.addStretch()
+      v_layout.addWidget(player_options_w)
+      v_layout.addStretch()
       
       h_layout = QHBoxLayout()
       h_layout.addWidget(self.board)

@@ -90,14 +90,20 @@ class AiPlayer(Player):
          self.DecidedMove.emit(uci)
          return uci
          
+   @pyqtSlot(float)
+   def SetTurnLimit(self, turn_limit_s):
+      """
+      """
+      self.turn_limit_s = turn_limit_s
+      
    @pyqtSlot(int)
-   def Checked(self, check_state):
+   def SetCheckSate(self, check_state):
       """
       """
-      self.Enable(check_state == Qt.Checked)
+      self.SetEnabled(check_state == Qt.Checked)
       
    @pyqtSlot(bool)
-   def Enable(self, enabled):
+   def SetEnabled(self, enabled):
       """
       """
       self.enabled = enabled
