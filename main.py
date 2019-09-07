@@ -1,45 +1,19 @@
 
 
 from board import ChessBoard
-from player import Player, AiPlayer
+from player import AiPlayer, AiPlayerUI
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QCheckBox, QDoubleSpinBox, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 
 
-class PlayerUI(QWidget):
-   """
-   """
-   COLOR = { Player.WHITE : "White", Player.BLACK : "Black"}
-   
-   RequestFen = pyqtSignal(str)
-   
-   def __init__(self, player, parent = None):
-      """
-      """
-      super().__init__(parent)
-      
-      # init UI
-      enabled = QCheckBox("{0} AI".format(PlayerUI.COLOR[player.color]), self)
-      turn_limit_s = QDoubleSpinBox(self)
-      turn_limit_s.setValue(player.turn_limit_s)
-      
-      v_layout = QVBoxLayout()
-      v_layout.addWidget(enabled)
-      v_layout.addWidget(turn_limit_s)
-      
-      self.setLayout(v_layout)
-      
-      # connect signals/slots
-      enabled.stateChanged.connect(player.SetCheckSate)
-      turn_limit_s.valueChanged.connect(player.SetTurnLimit)
-      
-      
 class Window(QWidget):
    """
+      BRIEF  This main window contains a chess board and player options
    """
    
    def __init__(self, exe_path, turn_limit_s, thread):
       """
+         BRIEF  Set up the UI
       """
       super().__init__()
       
@@ -47,8 +21,8 @@ class Window(QWidget):
       self.player_b = AiPlayer(exe_path, turn_limit_s, AiPlayer.BLACK, thread, self.board)
       self.player_w = AiPlayer(exe_path, turn_limit_s, AiPlayer.WHITE, thread, self.board)
       
-      player_options_b = PlayerUI(self.player_b, self)
-      player_options_w = PlayerUI(self.player_w, self)
+      player_options_b = AiPlayerUI(self.player_b, self)
+      player_options_w = AiPlayerUI(self.player_w, self)
       
       v_layout = QVBoxLayout()
       v_layout.addStretch()
@@ -73,7 +47,7 @@ if __name__ == '__main__':
    from PyQt5.QtWidgets import QApplication
    
    exe_path = '../chess-ai/build/chess-ai.exe'
-   turn_limis_s = 1
+   turn_limis_s = 8
    
    q_app = QApplication([])
    

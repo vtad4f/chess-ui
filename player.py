@@ -1,6 +1,7 @@
 
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, Qt
+from PyQt5.QtWidgets import QWidget, QCheckBox, QDoubleSpinBox, QVBoxLayout
 from subprocess import Popen, PIPE, DEVNULL
 
 
@@ -93,21 +94,55 @@ class AiPlayer(Player):
    @pyqtSlot(float)
    def SetTurnLimit(self, turn_limit_s):
       """
+         BRIEF  Set the turn limit for the player
       """
       self.turn_limit_s = turn_limit_s
       
    @pyqtSlot(int)
    def SetCheckSate(self, check_state):
       """
+         BRIEF  Overload SetEnabled for QCheckBox
       """
       self.SetEnabled(check_state == Qt.Checked)
       
    @pyqtSlot(bool)
    def SetEnabled(self, enabled):
       """
+         BRIEF  Set the enabled state
+         EMIT  RequestFen in case it is this player's turn
       """
       self.enabled = enabled
       self.RequestFen.emit()
+      
+      
+class AiPlayerUI(QWidget):
+   """
+      BRIEF  Stack the player options vertically in a UI
+   """
+   COLOR = { Player.WHITE : "White", Player.BLACK : "Black"}
+   
+   RequestFen = pyqtSignal(str)
+   
+   def __init__(self, player, parent = None):
+      """
+         BRIEF  Set up the UI
+      """
+      super().__init__(parent)
+      
+      # init UI
+      enabled = QCheckBox("{0} AI".format(AiPlayerUI.COLOR[player.color]), self)
+      turn_limit_s = QDoubleSpinBox(self)
+      turn_limit_s.setValue(player.turn_limit_s)
+      
+      v_layout = QVBoxLayout()
+      v_layout.addWidget(enabled)
+      v_layout.addWidget(turn_limit_s)
+      
+      self.setLayout(v_layout)
+      
+      # connect signals/slots
+      enabled.stateChanged.connect(player.SetCheckSate)
+      turn_limit_s.valueChanged.connect(player.SetTurnLimit)
       
       
 if __name__ == "__main__":
