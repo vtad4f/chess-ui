@@ -21,16 +21,15 @@ class ChessBoard(QWidget, chess.Board):
    """
       BRIEF  An interactive chessboard that only allows legal moves
    """
-   WND_XY = 200
    
    ReadyForNextMove = pyqtSignal(str)
    GameOver = pyqtSignal()
    
-   def __init__(self):
+   def __init__(self, parent = None):
       """
          BRIEF  Initialize the chessboard
       """
-      super().__init__()
+      super().__init__(parent)
       self.setWindowTitle("Chess")
       
       self.svg_xy = 50 # top left x,y-pos of chessboard
@@ -39,7 +38,7 @@ class ChessBoard(QWidget, chess.Board):
       self.square_size  = (self.board_size - 2*self.margin) / 8.0
       wnd_wh = self.board_size + 2*self.svg_xy
       
-      self.setGeometry(ChessBoard.WND_XY, ChessBoard.WND_XY, wnd_wh, wnd_wh)
+      self.setMinimumSize(wnd_wh, wnd_wh)
       self.svg_widget = QSvgWidget(parent=self)
       self.svg_widget.setGeometry(self.svg_xy, self.svg_xy, self.board_size, self.board_size)
       
@@ -72,13 +71,22 @@ class ChessBoard(QWidget, chess.Board):
          self.DrawBoard()
          
          print(self.fen())
-         if self.is_game_over():
+         if not self.TriggerNextMove():
             print("Game over!")
             self.GameOver.emit()
-         else:
-            self.ReadyForNextMove.emit(self.fen())
          sys.stdout.flush()
          
+   @pyqtSlot()
+   def TriggerNextMove(self):
+      """
+         EMIT  ReadyForNextMove if the game isn't over
+         RETURN  True if the game isn't over
+      """
+      if not self.is_game_over():
+         self.ReadyForNextMove.emit(self.fen())
+         return True
+      return False
+      
    def DrawBoard(self):
       """
          BRIEF  Redraw the chessboard based on board state

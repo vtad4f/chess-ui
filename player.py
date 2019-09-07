@@ -1,6 +1,6 @@
 
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, Qt
 from subprocess import Popen, PIPE, DEVNULL
 
 
@@ -19,9 +19,15 @@ class Player(QObject):
          BRIEF  Cache the player's color
       """
       super().__init__()
+         
+      # set member vars
       self.color = color
+      
+      # maybe move to thread
       if thread:
          self.moveToThread(thread)
+         
+      # connect signals/slots
       if board:
          self.DecidedMove.connect(board.ApplyMove)
          board.ReadyForNextMove.connect(self.TakeTurn)
@@ -44,13 +50,27 @@ class AiPlayer(Player):
       BRIEF  A wrapper for an AI executable
    """
    
+   RequestFen = pyqtSignal()
+   
    def __init__(self, exe_path, turn_limit_s, color, thread = None, board = None):
       """
          BRIEF  Start with the path to the exe and seconds limit per turn
       """
       super().__init__(color, thread, board)
+      
+      # set member vars
       self.exe_path = exe_path
       self.turn_limit_s = turn_limit_s
+      self.enabled = False
+      
+      # connect signals/slots
+      if board:
+         self.RequestFen.connect(board.TriggerNextMove)
+         
+   def IsMyMove(self, fen):
+      """
+      """
+      return super().IsMyMove(fen) and self.enabled
       
    @pyqtSlot(str)
    def TakeTurn(self, fen):
@@ -59,14 +79,31 @@ class AiPlayer(Player):
                  Emit DecidedMove(uci) and return uci
       """
       if self.IsMyMove(fen):
+         
+         # run the process
          args = [self.exe_path, fen, str(self.turn_limit_s)]
          process = Popen(args, stdin=PIPE, stdout=PIPE, stderr=DEVNULL)
          out, _ = process.communicate()
+         
+         # emit and return the move
          uci = out.decode().rstrip('\r\n')
          self.DecidedMove.emit(uci)
          return uci
          
-         
+   @pyqtSlot(int)
+   def Checked(self, check_state):
+      """
+      """
+      self.Enable(check_state == Qt.Checked)
+      
+   @pyqtSlot(bool)
+   def Enable(self, enabled):
+      """
+      """
+      self.enabled = enabled
+      self.RequestFen.emit()
+      
+      
 if __name__ == "__main__":
    """
       BRIEF  Test the Player class
