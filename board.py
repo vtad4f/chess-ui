@@ -13,7 +13,7 @@ import chess
 import chess.svg
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtWidgets import QDialog, QWidget, QRadioButton, QPushButton, QGroupBox, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QDialog, QWidget, QRadioButton, QPushButton, QButtonGroup, QGroupBox, QHBoxLayout, QVBoxLayout
 import sys
       
       
@@ -56,19 +56,19 @@ class ChessBoard(QWidget, chess.Board):
          
          if self.last_click:
             if self.last_click != this_click:
-               promotion = self.GetPromotion(this_click)
-               self.ApplyMove(self.last_click + this_click + promotion)
+               self.ApplyMove(self.last_click + this_click + self.GetPromotion(this_click))
                
          self.last_click, self.last_piece_type = this_click, piece_type
          
    def GetPromotion(self, this_click):
       """
-         BRIEF  
+         BRIEF  Get the uci piece type the pawn will be promoted to
       """
-      if self.last_piece_type == chess.PAWN and this_click[1] in ['1', '8']:
+      move = chess.Move.from_uci(self.last_click + this_click + 'q')
+      if move in self.legal_moves:
          dialog = PromotionDialog(self)
          if dialog.exec() == QDialog.Accepted:
-            return 'q' # TODO - retrieve value
+            return dialog.ChosenPiece()
       return ''
       
    @pyqtSlot(str)
@@ -113,7 +113,7 @@ class ChessBoard(QWidget, chess.Board):
       top_left = self.svg_xy + self.margin
       file_i =     int((event.x() - top_left)/self.square_size)
       rank_i = 7 - int((event.y() - top_left)/self.square_size)
-      piece_type = board.piece_type_at(chess.square(file_i, rank_i))
+      piece_type = self.piece_type_at(chess.square(file_i, rank_i))
       return chr(file_i + 97) + str(rank_i + 1), piece_type
       
    def LeftClickedBoard(self, event):
@@ -145,6 +145,13 @@ class PromotionDialog(QDialog):
       radio_r = QRadioButton("r")
       radio_b = QRadioButton("b")
       radio_n = QRadioButton("n")
+      
+      self.button_group = QButtonGroup()
+      self.button_group.addButton(radio_q)
+      self.button_group.addButton(radio_r)
+      self.button_group.addButton(radio_b)
+      self.button_group.addButton(radio_n)
+      
       radio_q.setChecked(True)
       
       radio_h_layout = QHBoxLayout()
@@ -171,6 +178,11 @@ class PromotionDialog(QDialog):
       v_layout.addLayout(button_h_layout)
       self.setLayout(v_layout)
       
+   def ChosenPiece(self):
+      """
+      """
+      return self.button_group.checkedButton().text()
+      
       
 if __name__ == "__main__":
    """
@@ -180,7 +192,6 @@ if __name__ == "__main__":
    q_app = QApplication([])
    board = ChessBoard()
    board.show()
-   # print(PromotionDialog(board).exec()), sys.stdout.flush() # Uncomment to test
    q_app.exec()
    
    
