@@ -1,7 +1,7 @@
 
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtWidgets import QWidget, QCheckBox, QRadioButton, QDoubleSpinBox, QGroupBox, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QCheckBox, QDoubleSpinBox, QVBoxLayout
 from subprocess import Popen, PIPE, DEVNULL
 
 
@@ -134,25 +134,9 @@ class PlayerUI(QWidget):
       turn_limit_s = QDoubleSpinBox(self)
       turn_limit_s.setValue(player.turn_limit_s)
       
-      radio_q = QRadioButton("q")
-      radio_r = QRadioButton("r")
-      radio_b = QRadioButton("b")
-      radio_n = QRadioButton("n")
-      radio_q.setChecked(True)
-      
-      h_layout = QHBoxLayout()
-      h_layout.addWidget(radio_q)
-      h_layout.addWidget(radio_r)
-      h_layout.addWidget(radio_b)
-      h_layout.addWidget(radio_n)
-      
-      group_box = QGroupBox()
-      group_box.setLayout(h_layout)
-      
       v_layout = QVBoxLayout()
       v_layout.addWidget(ai_enabled)
       v_layout.addWidget(turn_limit_s)
-      v_layout.addWidget(group_box)
       
       self.setLayout(v_layout)
       

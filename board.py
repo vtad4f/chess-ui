@@ -13,10 +13,10 @@ import chess
 import chess.svg
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtSvg import QSvgWidget
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QDialog, QWidget, QRadioButton, QPushButton, QGroupBox, QHBoxLayout, QVBoxLayout
 import sys
-
-
+      
+      
 class ChessBoard(QWidget, chess.Board):
    """
       BRIEF  An interactive chessboard that only allows legal moves
@@ -117,15 +117,58 @@ class ChessBoard(QWidget, chess.Board):
       ])
       
       
+class PromotionDialog(QDialog):
+   """
+      BRIEF  A dialog used to decide what to promote a pawn to
+   """
+   
+   def __init__(self, parent = None):
+      """
+         BRIF  Initialize the dialog with buttons
+      """
+      super().__init__(parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+      
+      radio_q = QRadioButton("q")
+      radio_r = QRadioButton("r")
+      radio_b = QRadioButton("b")
+      radio_n = QRadioButton("n")
+      radio_q.setChecked(True)
+      
+      radio_h_layout = QHBoxLayout()
+      radio_h_layout.addWidget(radio_q)
+      radio_h_layout.addWidget(radio_r)
+      radio_h_layout.addWidget(radio_b)
+      radio_h_layout.addWidget(radio_n)
+      
+      group_box = QGroupBox()
+      group_box.setLayout(radio_h_layout)
+      
+      ok_button = QPushButton("Ok")
+      cancel_button = QPushButton("Cancel")
+      
+      ok_button.released.connect(self.accept)
+      cancel_button.released.connect(self.reject)
+      
+      button_h_layout = QHBoxLayout()
+      button_h_layout.addWidget(ok_button)
+      button_h_layout.addWidget(cancel_button)
+      
+      v_layout = QVBoxLayout()
+      v_layout.addWidget(group_box)
+      v_layout.addLayout(button_h_layout)
+      self.setLayout(v_layout)
+      
+      
 if __name__ == "__main__":
    """
       BRIEF  Test the ChessBoard class
    """
    from PyQt5.QtWidgets import QApplication
-   
    q_app = QApplication([])
    board = ChessBoard()
    board.show()
+   print(PromotionDialog(board).exec())
+   sys.stdout.flush()
    q_app.exec()
    
    
