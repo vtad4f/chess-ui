@@ -15,8 +15,8 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtWidgets import QDialog, QWidget, QRadioButton, QPushButton, QButtonGroup, QGroupBox, QHBoxLayout, QVBoxLayout
 import sys
-      
-      
+
+
 class ChessBoard(QWidget, chess.Board):
    """
       BRIEF  An interactive chessboard that only allows legal moves
@@ -52,23 +52,23 @@ class ChessBoard(QWidget, chess.Board):
                 If the state changes, update the svg widget
       """
       if self.LeftClickedBoard(event):
-         this_click, piece_type = self.GetClicked(event)
+         this_click = self.GetClicked(event)
          
          if self.last_click:
             if self.last_click != this_click:
-               self.ApplyMove(self.last_click + this_click + self.GetPromotion(this_click))
+               uci = self.last_click + this_click
+               self.ApplyMove(uci + self.GetPromotion(uci))
                
-         self.last_click, self.last_piece_type = this_click, piece_type
+         self.last_click = this_click
          
-   def GetPromotion(self, this_click):
+   def GetPromotion(self, uci):
       """
          BRIEF  Get the uci piece type the pawn will be promoted to
       """
-      move = chess.Move.from_uci(self.last_click + this_click + 'q')
-      if move in self.legal_moves:
+      if chess.Move.from_uci(uci + 'q') in self.legal_moves:
          dialog = PromotionDialog(self)
          if dialog.exec() == QDialog.Accepted:
-            return dialog.ChosenPiece()
+            return dialog.SelectedPiece()
       return ''
       
    @pyqtSlot(str)
@@ -113,8 +113,7 @@ class ChessBoard(QWidget, chess.Board):
       top_left = self.svg_xy + self.margin
       file_i =     int((event.x() - top_left)/self.square_size)
       rank_i = 7 - int((event.y() - top_left)/self.square_size)
-      piece_type = self.piece_type_at(chess.square(file_i, rank_i))
-      return chr(file_i + 97) + str(rank_i + 1), piece_type
+      return chr(file_i + 97) + str(rank_i + 1)
       
    def LeftClickedBoard(self, event):
       """
@@ -178,8 +177,9 @@ class PromotionDialog(QDialog):
       v_layout.addLayout(button_h_layout)
       self.setLayout(v_layout)
       
-   def ChosenPiece(self):
+   def SelectedPiece(self):
       """
+         BRIEF  Get the uci piece type the user selected from the dialog
       """
       return self.button_group.checkedButton().text()
       
