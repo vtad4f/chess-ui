@@ -42,7 +42,7 @@ class ChessBoard(QWidget, chess.Board):
       self.svg_widget = QSvgWidget(parent=self)
       self.svg_widget.setGeometry(self.svg_xy, self.svg_xy, self.board_size, self.board_size)
       
-      self.last_clicked = None
+      self.last_click = None
       self.DrawBoard()
       
    @pyqtSlot(QWidget)
@@ -52,14 +52,25 @@ class ChessBoard(QWidget, chess.Board):
                 If the state changes, update the svg widget
       """
       if self.LeftClickedBoard(event):
-         clicked_algebraic = self.GetClicked(event)
+         this_click, piece_type = self.GetClicked(event)
          
-         if self.last_clicked:
-            if self.last_clicked != clicked_algebraic:
-               self.ApplyMove(self.last_clicked + clicked_algebraic)
+         if self.last_click:
+            if self.last_click != this_click:
+               promotion = self.GetPromotion(this_click)
+               self.ApplyMove(self.last_click + this_click + promotion)
                
-         self.last_clicked = clicked_algebraic
+         self.last_click, self.last_piece_type = this_click, piece_type
          
+   def GetPromotion(self, this_click):
+      """
+         BRIEF  
+      """
+      if self.last_piece_type == chess.PAWN and this_click[1] in ['1', '8']:
+         dialog = PromotionDialog(self)
+         if dialog.exec() == QDialog.Accepted:
+            return 'q' # TODO - retrieve value
+      return ''
+      
    @pyqtSlot(str)
    def ApplyMove(self, uci):
       """
@@ -100,9 +111,10 @@ class ChessBoard(QWidget, chess.Board):
          BRIEF  Get the algebraic notation for the clicked square
       """
       top_left = self.svg_xy + self.margin
-      file =     int((event.x() - top_left)/self.square_size)
-      rank = 7 - int((event.y() - top_left)/self.square_size)
-      return chr(file + 97) + str(rank + 1)
+      file_i =     int((event.x() - top_left)/self.square_size)
+      rank_i = 7 - int((event.y() - top_left)/self.square_size)
+      piece_type = board.piece_type_at(chess.square(file_i, rank_i))
+      return chr(file_i + 97) + str(rank_i + 1), piece_type
       
    def LeftClickedBoard(self, event):
       """
@@ -127,6 +139,7 @@ class PromotionDialog(QDialog):
          BRIF  Initialize the dialog with buttons
       """
       super().__init__(parent, Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+      self.setWindowTitle("Promotion")
       
       radio_q = QRadioButton("q")
       radio_r = QRadioButton("r")
@@ -167,8 +180,7 @@ if __name__ == "__main__":
    q_app = QApplication([])
    board = ChessBoard()
    board.show()
-   print(PromotionDialog(board).exec())
-   sys.stdout.flush()
+   # print(PromotionDialog(board).exec()), sys.stdout.flush() # Uncomment to test
    q_app.exec()
    
    
