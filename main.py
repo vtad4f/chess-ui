@@ -1,7 +1,7 @@
 
 
 from board import ChessBoard
-from player import AiPlayer, AiPlayerUI
+from player import AiPlayer, PlayerUI
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 
@@ -21,8 +21,8 @@ class Window(QWidget):
       self.player_b = AiPlayer(exe_path, turn_limit_s, AiPlayer.BLACK, thread, self.board)
       self.player_w = AiPlayer(exe_path, turn_limit_s, AiPlayer.WHITE, thread, self.board)
       
-      player_options_b = AiPlayerUI(self.player_b, self)
-      player_options_w = AiPlayerUI(self.player_w, self)
+      player_options_b = PlayerUI(self.player_b, self)
+      player_options_w = PlayerUI(self.player_w, self)
       
       v_layout = QVBoxLayout()
       v_layout.addStretch()
@@ -46,13 +46,13 @@ if __name__ == '__main__':
    from PyQt5.QtCore import QThread
    from PyQt5.QtWidgets import QApplication
    
-   exe_path = '../chess-ai/build/chess-ai.exe'
-   turn_limis_s = 8
+   default_exe_path = '../chess-ai/build/chess-ai.exe'
+   default_turn_limis_s = 8
    
    q_app = QApplication([])
    
    thread = QThread()
-   wnd = Window(exe_path, turn_limis_s, thread)
+   wnd = Window(default_exe_path, default_turn_limis_s, thread)
    
    q_app.aboutToQuit.connect(thread.quit)
    thread.start()
