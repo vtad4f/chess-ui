@@ -70,6 +70,7 @@ class AiPlayer(Player):
          
    def IsMyMove(self, fen):
       """
+         BRIEF  This is how we are disabling AIs
       """
       return super().IsMyMove(fen) and self.enabled
       
