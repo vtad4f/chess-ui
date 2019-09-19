@@ -89,6 +89,17 @@ class ChessBoard(QWidget, chess.Board):
             self.GameOver.emit()
          sys.stdout.flush()
          
+   @pyqtSlot()
+   def UndoMove(self):
+      """
+      """
+      try:
+         self.pop()
+         self.DrawBoard()
+         self.ReadyForNextMove.emit(self.fen())
+      except IndexError:
+         pass
+         
    def DrawBoard(self):
       """
          BRIEF  Redraw the chessboard based on board state
@@ -175,6 +186,28 @@ class PromotionDialog(QDialog):
       return self.button_group.checkedButton().text()
       
       
+class BoardControls(QWidget):
+   """
+      BRIEF  A UI used to modify the board
+   """
+   
+   def __init__(self, board, parent = None):
+      """
+         BRIEF  Initialize the controls
+      """
+      super().__init__(parent)
+      
+      undo_button = QPushButton("Undo", self)
+      
+      v_layout = QVBoxLayout()
+      v_layout.addWidget(undo_button)
+      
+      self.setLayout(v_layout)
+      
+      # connect signals/slots
+      undo_button.released.connect(board.UndoMove)
+      
+      
 if __name__ == "__main__":
    """
       BRIEF  Test the ChessBoard class
@@ -182,7 +215,11 @@ if __name__ == "__main__":
    from PyQt5.QtWidgets import QApplication
    q_app = QApplication([])
    board = ChessBoard()
+   board.UndoMove()
    board.show()
+   board_controls = BoardControls(board)
+   board_controls.setGeometry(300, 300, 200, 100)
+   board_controls.show()
    q_app.exec()
    
    

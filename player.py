@@ -106,19 +106,15 @@ class AiPlayer(Player):
    def SetEnabled(self, enabled):
       """
          BRIEF  Set the enabled state
-         EMIT  RequestFen in case it is this player's turn
       """
       self.enabled = enabled
       self.TakeTurn(self.last_fen)
       
       
-class PlayerUI(QWidget):
+class PlayerOptions(QWidget):
    """
       BRIEF  Stack the player options vertically in a UI
    """
-   COLOR = { Player.WHITE : "White", Player.BLACK : "Black"}
-   
-   RequestFen = pyqtSignal(str)
    
    def __init__(self, player, parent = None):
       """
@@ -127,7 +123,8 @@ class PlayerUI(QWidget):
       super().__init__(parent)
       
       # init UI
-      ai_enabled = QCheckBox("{0} AI".format(PlayerUI.COLOR[player.color]), self)
+      color = { Player.WHITE : "White", Player.BLACK : "Black"}[player.color]
+      ai_enabled = QCheckBox("{0} AI".format(color), self)
       turn_limit_s = QDoubleSpinBox(self)
       turn_limit_s.setValue(player.turn_limit_s)
       
@@ -219,10 +216,10 @@ if __name__ == "__main__":
    player_b = AiPlayer(exe_path, .1, Player.BLACK, thread, board)
    player_w = AiPlayer(exe_path, .1, Player.WHITE, thread, board)
    
-   player_options_b = PlayerUI(player_b)
+   player_options_b = PlayerOptions(player_b)
    player_options_b.setGeometry(300, 300, 200, 100)
    
-   player_options_w = PlayerUI(player_w)
+   player_options_w = PlayerOptions(player_w)
    player_options_w.setGeometry(300, 600, 200, 100)
    
    board.GameOver.connect(q_app.exit)
