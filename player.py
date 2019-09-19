@@ -155,8 +155,8 @@ if __name__ == "__main__":
    # Synchronous
    #----------------------
    board = chess.Board()
-   player_w = AiPlayer(exe_path, .1, Player.WHITE)
    player_b = AiPlayer(exe_path, .1, Player.BLACK)
+   player_w = AiPlayer(exe_path, .1, Player.WHITE)
    player = player_w
    
    while not board.is_game_over():
@@ -200,31 +200,37 @@ if __name__ == "__main__":
             BRIEF  Apply a move to the board
          """
          print(uci)
-         sys.stdout.flush()
          
          move = chess.Move.from_uci(uci)
-         assert(move in self.legal_moves)
-         self.push(move)
-         
-         if self.is_game_over():
-            print(self.fen())
-            sys.stdout.flush()
-            self.GameOver.emit()
-         else:
-            self.ReadyForNextMove.emit(self.fen())
+         if move in self.legal_moves:
+            self.push(move)
             
+            if not self.is_game_over():
+               self.ReadyForNextMove.emit(self.fen())
+            else:
+               print(self.fen())
+               self.GameOver.emit()
+               
+         sys.stdout.flush()
+         
    q_app = QApplication([])
    thread = QThread()
    board = ChessBoard()
-   player_w = AiPlayer(exe_path, .1, Player.WHITE, thread, board)
    player_b = AiPlayer(exe_path, .1, Player.BLACK, thread, board)
+   player_w = AiPlayer(exe_path, .1, Player.WHITE, thread, board)
+   
+   player_options_b = PlayerUI(player_b)
+   player_options_b.setGeometry(300, 300, 200, 100)
+   
+   player_options_w = PlayerUI(player_w)
+   player_options_w.setGeometry(300, 600, 200, 100)
    
    board.GameOver.connect(q_app.exit)
    q_app.aboutToQuit.connect(thread.quit)
    thread.start()
    
-   player_w.SetEnabled(True)
-   player_b.SetEnabled(True)
+   player_options_b.show()
+   player_options_w.show()
    
    q_app.exec()
    thread.wait()
