@@ -51,8 +51,6 @@ class AiPlayer(Player):
       BRIEF  A wrapper for an AI executable
    """
    
-   RequestFen = pyqtSignal()
-   
    def __init__(self, exe_path, turn_limit_s, color, thread = None, board = None):
       """
          BRIEF  Start with the path to the exe and seconds limit per turn
@@ -62,12 +60,9 @@ class AiPlayer(Player):
       # set member vars
       self.exe_path = exe_path
       self.turn_limit_s = turn_limit_s
-      self.enabled = False
+      self.enabled = board is None # enabled by default if no board
+      self.last_fen = board.fen() if board else None
       
-      # connect signals/slots
-      if board:
-         self.RequestFen.connect(board.TriggerNextMove)
-         
    def IsMyMove(self, fen):
       """
          BRIEF  This is how we are disabling AIs
@@ -80,6 +75,7 @@ class AiPlayer(Player):
          BRIEF   Open a process to get the next move from the AI
                  Emit DecidedMove(uci) and return uci
       """
+      self.last_fen = fen
       if self.IsMyMove(fen):
          
          # run the process
@@ -113,7 +109,7 @@ class AiPlayer(Player):
          EMIT  RequestFen in case it is this player's turn
       """
       self.enabled = enabled
-      self.RequestFen.emit()
+      self.TakeTurn(self.last_fen)
       
       
 class PlayerUI(QWidget):
@@ -227,7 +223,8 @@ if __name__ == "__main__":
    q_app.aboutToQuit.connect(thread.quit)
    thread.start()
    
-   player_w.TakeTurn(board.fen())
+   player_w.SetEnabled(True)
+   player_b.SetEnabled(True)
    
    q_app.exec()
    thread.wait()

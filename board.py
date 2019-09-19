@@ -82,22 +82,13 @@ class ChessBoard(QWidget, chess.Board):
          self.DrawBoard()
          
          print(self.fen())
-         if not self.TriggerNextMove():
+         if not self.is_game_over():
+            self.ReadyForNextMove.emit(self.fen())
+         else:
             print("Game over!")
             self.GameOver.emit()
          sys.stdout.flush()
          
-   @pyqtSlot()
-   def TriggerNextMove(self):
-      """
-         EMIT  ReadyForNextMove if the game isn't over
-         RETURN  True if the game isn't over
-      """
-      if not self.is_game_over():
-         self.ReadyForNextMove.emit(self.fen())
-         return True
-      return False
-      
    def DrawBoard(self):
       """
          BRIEF  Redraw the chessboard based on board state
