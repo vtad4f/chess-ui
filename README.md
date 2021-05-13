@@ -1,3 +1,5 @@
+<table><tr><td>
+
 # Prerequisites
 1. Install [python 3](https://www.python.org/downloads/)
 
@@ -14,3 +16,4 @@
 # Optional
 5. You can provide your own AI executable or use [this one](https://github.com/vtad4f/chess-ai)
 
+</td><td><img src="https://imgur.com/H2nuTtb.png"/></td></tr></table>
