@@ -126,7 +126,6 @@ class PlayerOptions(QWidget):
       color = { Player.WHITE : "White", Player.BLACK : "Black"}[player.color]
       ai_enabled = QCheckBox("{0} AI".format(color), self)
       turn_limit_s = QDoubleSpinBox(self)
-      turn_limit_s.setValue(player.turn_limit_s)
       
       v_layout = QVBoxLayout()
       v_layout.addWidget(ai_enabled)
@@ -134,11 +133,16 @@ class PlayerOptions(QWidget):
       
       self.setLayout(v_layout)
       
-      # connect signals/slots
-      ai_enabled.stateChanged.connect(player.SetCheckSate)
-      turn_limit_s.valueChanged.connect(player.SetTurnLimit)
-      
-      
+      # connect signals/slots or disable UI
+      if isinstance(player, AiPlayer):
+         ai_enabled.stateChanged.connect(player.SetCheckSate)
+         turn_limit_s.setValue(player.turn_limit_s)
+         turn_limit_s.valueChanged.connect(player.SetTurnLimit)
+      else:
+         ai_enabled.setEnabled(False)
+         turn_limit_s.setEnabled(False)
+         
+         
 if __name__ == "__main__":
    """
       BRIEF  Test the Player class

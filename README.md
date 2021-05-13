@@ -1,0 +1,14 @@
+# Prerequisites
+1. Install [python 3](https://www.python.org/downloads/)
+
+2. Then run the following commands:
+   * `py -m pip install PyQt5`
+   * `py -m pip install python-chess`
+
+# How to run
+3. To access this code, click the green 'Code' button on this GitHub page. You can either download it as a zip file or clone the repository if you have git installed.
+
+4. Then run the following command:
+   * `py main.py`
+   
+   

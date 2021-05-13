@@ -1,11 +1,16 @@
 
 
 from board import ChessBoard, BoardControls
-from player import AiPlayer, PlayerOptions
+from player import Player, AiPlayer, PlayerOptions
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QMessageBox
+import os
 
 
+class Options:
+   DEFAULT_TURN_LIMIT_S = 8
+   DEFAULT_AI_EXE_PATH = '../chess-ai/build/chess-ai.exe'
+   
 class Window(QWidget):
    """
       BRIEF  This main window contains a chess board and player options
@@ -18,11 +23,16 @@ class Window(QWidget):
       super().__init__()
       
       self.board = ChessBoard(self)
-      self.player_b = AiPlayer(exe_path, turn_limit_s, AiPlayer.BLACK, thread, self.board)
-      self.player_w = AiPlayer(exe_path, turn_limit_s, AiPlayer.WHITE, thread, self.board)
       
+      if os.path.isfile(exe_path):
+         self.player_b = AiPlayer(exe_path, turn_limit_s, Player.BLACK, thread, self.board)
+         self.player_w = AiPlayer(exe_path, turn_limit_s, Player.WHITE, thread, self.board)
+      else:
+         self.player_b = Player(Player.BLACK, thread, self.board)
+         self.player_w = Player(Player.WHITE, thread, self.board)
+         
       player_options_b = PlayerOptions(self.player_b, self)
-      board_controls   = BoardControls(self.board)
+      board_controls = BoardControls(self.board)
       player_options_w = PlayerOptions(self.player_w, self)
       
       v_layout = QVBoxLayout()
@@ -48,14 +58,23 @@ if __name__ == '__main__':
    """
    from PyQt5.QtCore import QThread
    from PyQt5.QtWidgets import QApplication
+   from argparse import ArgumentParser
    
-   default_exe_path = '../chess-ai/build/chess-ai.exe'
-   default_turn_limis_s = 8
+   parser = ArgumentParser()
+   parser.add_argument('ai_exe_path', nargs='?', type=str, default=Options.DEFAULT_AI_EXE_PATH,
+                                      help='An AI exe which accepts 2 args <fen> <time limit (s)>. It should output a turn in uci format within the time limit.')
+   args = parser.parse_args()
    
    q_app = QApplication([])
    
+   if not os.path.isfile(args.ai_exe_path):
+      warning = QMessageBox()
+      warning.setWindowTitle("Warning")
+      warning.setText("AI exe path '{0}' not found. Associated controls will be disabled.\nRun main.py --help for details.".format(args.ai_exe_path))
+      warning.exec()
+      
    thread = QThread()
-   wnd = Window(default_exe_path, default_turn_limis_s, thread)
+   wnd = Window(args.ai_exe_path, Options.DEFAULT_TURN_LIMIT_S, thread)
    
    q_app.aboutToQuit.connect(thread.quit)
    thread.start()
