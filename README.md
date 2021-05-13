@@ -10,5 +10,7 @@
 
 4. Then run the following command:
    * `py main.py`
-   
-   
+
+# Optional
+5. You can provide your own AI executable or use [this one](https://github.com/vtad4f/chess-ai)
+
